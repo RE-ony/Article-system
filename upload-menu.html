@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Creative Admin Dashboard</title>
+		<!-- ================= Favicon ================== -->
+		<!-- Styles -->
+		<link href="assets/css/lib/chartist/chartist.min.css" rel="stylesheet">
+		<link href="assets/css/lib/font-awesome.min.css" rel="stylesheet">
+		<link href="assets/css/lib/themify-icons.css" rel="stylesheet">
+		<link href="assets/css/lib/owl.carousel.min.css" rel="stylesheet" />
+		<link href="assets/css/lib/owl.theme.default.min.css" rel="stylesheet" />
+		<link href="assets/css/lib/weather-icons.css" rel="stylesheet" />
+		<link href="assets/css/lib/menubar/sidebar.css" rel="stylesheet">
+		<link href="assets/css/lib/bootstrap.min.css" rel="stylesheet">
+		<link href="assets/css/lib/unix.css" rel="stylesheet">
+		<link href="assets/css/style.css" rel="stylesheet">
+		<script src="assets/js/lib/jquery-3.6.0.js"></script>
+		<script src="assets/js/lib/plupload/plupload.full.min.js"></script>
+		<script src="layui/layui.js"></script>
+		<script>
+			$(document).ready(function() {
+				//显示文章
+				$.post("php/showArctileDetails.php", function(data) {
+					var dataObj = eval("(" + data + ")");
+					var title = " ";
+					var details = " ";
+					$.each(dataObj, function(idx, item) {
+						// alert("title:"+item.article_id+",time:"+item.article_content);
+						title = title + item.article_title;
+						details = details + item.article_content;
+					});
+					$("#title").html(title);
+					$("#details").html(details);
+				});
+				//显示标题
+				$.post("php/showArctileFile.php", function(data) {
+					var dataObj = eval("(" + data + ")");
+					$.each(dataObj, function(idx, item) {
+						//alert("title:"+item.file_name+",time:"+item.filePath);
+						$("#filelist_t").append("<tr><td>" + item.file_name +
+							"</td><td><a class='badge badge-primary' href='" + item.file_all_path +
+							"'>查看</a><a class='badge badge-primary' id='" + item.file_true_path + "' onclick='imgDown_t(event,this)'>删除</a></td></tr>");
+					});
+				});
+				//附件
+				$.post("php/showArctile_T.php", function(data) {
+					var dataObj = eval("(" + data + ")");
+					$.each(dataObj, function(idx, item) {
+						//alert("title:"+item.file_name+",time:"+item.file_all_path);
+						$("#filealllist").append("<tr><td>" + item.file_name +
+							"</td><td><a class='badge badge-primary' href='" + item.file_all_path +
+							"'>查看</a><a class='badge badge-primary' id='" + item.file_true_path + "' onclick='imgDown_f(event,this)'>删除</a></td></tr>");
+					});
+				});
+				//上传附件
+				var j;
+				var uploader = new plupload.Uploader({
+					browse_button: ['btn_select'],
+					url: 'php/upload_F.php'
+				});
+				uploader.bind('FilesAdded', function(up, files) {
+					var html = '';
+					plupload.each(files, function(file) {
+						html += '<li id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file
+							.size) + ') <b></b></li>';
+					});
+					document.getElementById('filelist').innerHTML += html;
+					uploader.start();
+				});
+				uploader.bind('UploadProgress', function(up, file) {
+					document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file
+						.percent + "%</span>";
+					$("#progress_info").css("display", "block");
+					$("#progress_info_bar").attr("aria-valuenow", file.percent);
+				});
+				uploader.bind('FileUploaded', function(up, file, result) {
+					j = JSON.parse(result.response);
+					$("#div_affixList").append("<div id='" + j.fileName + "'><span>" + j.fileName +
+						"</span><a href='" + j.src + "' >下载<a/><button id='" + j.fileName + "' class='" + j
+						.filePath + "' onclick='imgDown(event,this)'>删除</button></div>");
+					$("#progress_info").css("display", "none");
+					$("#progress_info_bar").attr("aria-valuenow", 0);
+				});
+				uploader.init();
+				//上传封面
+				var j_t;
+				var uploader_t = new plupload.Uploader({
+					browse_button: ['btn_select_t'],
+					url: 'php/upload_TT.php',
+					filters: [{
+						title: "图片文件",
+						extensions: "jpg,gif,png"
+					}]
+				});
+				uploader_t.bind('FilesAdded', function(up, files) {
+					var html = '';
+					plupload.each(files, function(file) {
+						html += '<li id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file
+							.size) + ') <b></b></li>';
+					});
+					document.getElementById('filelist_t').innerHTML += html;
+					uploader_t.start();
+				});
+				uploader_t.bind('UploadProgress', function(up, file) {
+					document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file
+						.percent + "%</span>";
+					$("#progress_info_t").css("display", "block");
+					$("#progress_info_bar_t").attr("aria-valuenow", file.percent);
+				});
+				uploader_t.bind('FileUploaded', function(up, file, result) {
+					j = JSON.parse(result.response);
+					$("#div_affixList_t").append("<div id='" + j.fileName + "'><span>" + j.fileName +
+						"</span><a href='" + j.src + "' >下载<a/><button id='" + j.fileName + "' class='" + j
+						.filePath + "' onclick='imgDown(event,this)'>删除</button></div>");
+					$("#progress_info_t").css("display", "none");
+					$("#progress_info_bar_t").attr("aria-valuenow", 0);
+				});
+				uploader_t.init();
+				//总体
+				$("#save").click(function() {
+					var title = $("#title").val();
+					var content = $("#content").val();
+					var userData = {
+						title: $("#title").val(),
+						content: $("#details").val()
+					}
+					$.post("php/upart.php", userData, function(data) {
+						if (data == "true") {
+							alert("成功");
+						}
+					});
+				});
+			});
+			//附件
+			function imgDown_f(e, nowTr) {
+				var userData = {
+					fileName: $(e.target).attr("id")
+				}
+				//alert(userData.fileName);
+				$.post("php/delete_f.php", userData, function(data) {
+					if (data == "Deleted") {
+						$(nowTr).parent().parent().remove();
+					}
+				});
+			}
+			//标题
+			function imgDown_t(e, nowTr) {
+				var userData = {
+					fileName: $(e.target).attr("id")
+				}
+				//alert(userData.fileName);
+				$.post("php/delete_t.php", userData, function(data) {
+					if (data == "Deleted") {
+						$(nowTr).parent().parent().remove();
+					}
+				});
+			}
+		</script>
+	</head>
+
+	<body>
+		<div class="content-wrap">
+			<div class="main">
+				<div class="container-fluid">
+					<!-- /# row -->
+					<div class="main-content">
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="card alert">
+									<div class="card-header">
+										<h4>Menu Upload</h4>
+										<div class="card-header-right-icon">
+											<ul>
+												<li class="card-close" data-dismiss="alert"><i class="ti-close"></i>
+												</li>
+												<li class="doc-link"><a href="#"><i class="ti-link"></i></a></li>
+											</ul>
+										</div>
+									</div>
+									<div class="card-body">
+										<div class="menu-upload-form">
+											<form class="form-horizontal">
+
+												<div class="form-group">
+													<label class="col-sm-2 control-label">Title</label>
+													<div class="col-sm-10">
+														<textarea class="form-control" rows="1"
+															placeholder="Type your title" id="title"></textarea>
+													</div>
+												</div>
+
+												<div class="form-group">
+													<label class="col-sm-2 control-label">title</label>
+													<div class="col-sm-10">
+														<input type="button" value="select a file" id="btn_select_t" />
+														<ul id="filelist_t"></ul>
+														<div id="div_affixList_t"></div>
+														<div class="progress" id="progress_info_t" style="display: none;">
+															<div class="progress-bar w-100" role="progressbar"
+																aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+																id="progress_info_bar_t">
+															</div>
+														</div>
+													</div>
+												</div>
+												
+												<div class="form-group">
+													<label class="col-sm-2 control-label">Details</label>
+													<div class="col-sm-10">
+														<textarea class="form-control" rows="6"
+															placeholder="Type your Details" id="details"></textarea>
+													</div>
+												</div>
+												<div class="form-group">
+													<label class="col-sm-2 control-label">Upload Product</label>
+													<div class="col-sm-10">
+														<input type="button" value="select a file" id="btn_select" />
+														<ul id="filelist"></ul>
+														<div id="div_affixList"></div>
+														<div class="progress" id="progress_info" style="display: none;">
+															<div class="progress-bar w-100" role="progressbar"
+																aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+																id="progress_info_bar">
+															</div>
+														</div>
+													</div>
+												</div>
+												<div class="form-group">
+													<div class="col-sm-offset-2 col-sm-10">
+														<input type="button" class="btn btn-lg btn-primary"
+															value="upload" id="save" />
+													</div>
+												</div>
+												<div class="form-group">
+													<label class="col-sm-2 control-label">附件表</label>
+													<div class="col-sm-10">
+														<table class="table table-hover ">
+															<thead>
+																<tr>
+																	<th>Name</th>
+																	<th>Status</th>
+																</tr>
+															</thead>
+															<tbody id="filealllist">
+																<!-- <tr>
+																	<td>Kolor Tea Shirt For Man</td>
+																	<td><a class="badge badge-primary">Ongoing</a></td>
+																</tr> -->
+															</tbody>
+														</table>
+													</div>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+								<!-- /# card -->
+							</div>
+							<!-- /# column -->
+						</div>
+						<!-- /# row -->
+					</div>
+					<!-- /# main content -->
+				</div>
+				<!-- /# container-fluid -->
+			</div>
+			<!-- /# main -->
+		</div>
+		<!-- /# content wrap -->
+
+		<script src="assets/js/lib/jquery.min.js"></script>
+		<!-- jquery vendor -->
+		<script src="assets/js/lib/jquery.nanoscroller.min.js"></script>
+		<!-- nano scroller -->
+		<script src="assets/js/lib/menubar/sidebar.js"></script>
+		<script src="assets/js/lib/preloader/pace.min.js"></script>
+		<!-- sidebar -->
+		<script src="assets/js/lib/bootstrap.min.js"></script>
+		<!-- bootstrap -->
+		<script src="assets/js/lib/weather/jquery.simpleWeather.min.js"></script>
+		<script src="assets/js/lib/weather/weather-init.js"></script>
+		<script src="assets/js/lib/circle-progress/circle-progress.min.js"></script>
+		<script src="assets/js/lib/circle-progress/circle-progress-init.js"></script>
+		<script src="assets/js/lib/chartist/chartist.min.js"></script>
+		<script src="assets/js/lib/chartist/chartist-init.js"></script>
+		<script src="assets/js/lib/sparklinechart/jquery.sparkline.min.js"></script>
+		<script src="assets/js/lib/sparklinechart/sparkline.init.js"></script>
+		<script src="assets/js/lib/owl-carousel/owl.carousel.min.js"></script>
+		<script src="assets/js/lib/owl-carousel/owl.carousel-init.js"></script>
+		<script src="assets/js/scripts.js"></script>
+	</body>
+
+</html>

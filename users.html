@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>Email</title>
+
+		<!-- ================= Favicon ================== -->
+
+		<link href="assets/css/lib/themify-icons.css" rel="stylesheet">
+		<link href="assets/css/lib/font-awesome.min.css" rel="stylesheet">
+		<link href="assets/css/lib/menubar/sidebar.css" rel="stylesheet">
+		<link href="assets/css/lib/bootstrap.min.css" rel="stylesheet">
+		<link href="assets/css/lib/Unix.css" rel="stylesheet">
+		<link href="assets/css/style.css" rel="stylesheet">
+		<script src="assets/js/lib/jquery-3.6.0.js"></script>
+		<script src="assets/js/lib/plupload/plupload.full.min.js"></script>
+		<script src="layui/layui.js"></script>
+		<script>
+			$(document).ready(function() {
+				$.post("php/showUser.php", function(data) {
+					var dataObj = eval("(" + data + ")");
+					var td = " ";
+					$.each(dataObj, function(idx, item) {
+						//alert("name:"+item.id+",value:"+item.name);
+						td = td + "<tr><td class='view-message dont-show'>" + item.name +
+							"<span class='badge badge-success pull-right m-t-6'>" + item.isuse +
+							"</td><td class='view-message view-message'>" + item.type +
+							"</td><td class='view-message'>" +
+							item.become_admin +
+							"</td><td class='inbox-small-cells'><input type='button' class='btn' value='拉黑或撤回' data-id='"+item.isuse+"' id='" +
+							item.id +
+							"' onclick='getId(event,this)'><input type='button' class='btn btn-primary' value='变为作者' data-id='" +
+							item.id + "' onclick='notUse(event,this)'></td></tr>";
+					});
+					$("#artclieList").html(td);
+				});
+				$.post("php/pages_U.php", function(data) {
+					var allpage = 0;
+					allpage = Math.ceil(data / 10);
+					if (allpage <= 20) {
+						var li =
+							"<li class='paginate_button'><a href='#' aria-controls='row-select' tabindex='0' >共有"+allpage+"页</a></li><li class='paginate_button active'><a href='#' aria-controls='row-select' data-dt-idx='1' tabindex='0'  onclick='getPage(event,this)'>1</a></li>";
+						for (var i = 2; i <= Math.ceil(data / 10); i++) {
+							li = li +
+								"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+								i + "' tabindex='0' onclick='getPage(event,this)'>" + i + "</a></li>";
+						}
+						$("#pages").html(li);
+					} else {
+						var li =
+							"<li class='paginate_button'><a href='#' aria-controls='row-select' tabindex='0' >共有"+allpage+"页</a></li><li class='paginate_button previous' id='row-select_previous'><a href='#' aria-controls='row-select' data-dt-idx='1' tabindex='0' onclick='goPer(event,this)'>Previous</a></li><li class='paginate_button active'><a href='#' aria-controls='row-select' data-dt-idx='1' tabindex='0'  onclick='getPage(event,this)'>1</a></li>";
+						for (var i = 2; i <= 20; i++) {
+							li = li +
+								"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+								i + "' tabindex='0' onclick='getPage(event,this)'>" + i + "</a></li>";
+						}
+						li = li +
+							"<li class='paginate_button next' id='row-select_next'><a href='#' aria-controls='row-select' data-dt-idx='20' tabindex='0' onclick='goNext(event,this)'>Next</a></li>";
+						$("#pages").html(li);
+					}
+					// alert(p);
+				});
+			});
+
+			function notUse(e, nowTr) {
+				// var tar = e.target;
+				var userData = {
+					aid: $(e.target).attr("data-id")
+				}
+				$.post("php/upuser.php", userData, function(data) {
+					//alert(data);
+					if (data == "successe") {
+						//alert("F");
+						$(nowTr).parent().prev().prev().text("admin");
+					}
+				});
+			}
+
+			function getId(e, nowTr) {
+				// var tar = e.target;
+				var userData = {
+					userId: $(e.target).attr("id"),
+					isuse: $(e.target).attr("data-id")
+				}
+				$.post("php/notUse.php", userData, function(data) {
+					if (data == "successe") {
+						//alert("F");
+						$(nowTr).parent().prev().prev().prev().children().text("F");
+					}else{
+						$(nowTr).parent().prev().prev().prev().children().text("T");
+					}
+				});
+			}
+			function getPage(e, nowTr) {
+				// var tar = e.target;
+				$(nowTr).parent().siblings("li").removeClass("active");
+				$(nowTr).parent().addClass("active");
+				var userData = {
+					pageNum: $(e.target).attr("data-dt-idx")
+				}
+				$.post("php/showOther_U.php", userData, function(data) {
+					var td = " ";
+					$("#artclieList").html(td);
+					var dataObj = eval("(" + data + ")");
+					$.each(dataObj, function(idx, item) {
+						//alert("name:"+item.id+",value:"+item.title);
+						td = td + "<tr><td class='view-message dont-show'>" + item.name +
+							"<span class='badge badge-success pull-right m-t-6'>" + item.isuse +
+							"</td><td class='view-message view-message'>" + item.type +
+							"</td><td class='view-message'>" +
+							item.become_admin +
+							"</td><td class='inbox-small-cells'><input type='button' class='btn' value='拉黑或撤回' data-id='"+item.isuse+"' id='" +
+							item.id +
+							"' onclick='getId(event,this)'><input type='button' class='btn btn-primary' value='变为作者' data-id='" +
+							item.id + "' onclick='notUse(event,this)'></td></tr>";
+					});
+					$("#artclieList").html(td);
+				});
+			}
+			
+			function goNext(e, nowTr) {
+				// var tar = e.target;
+				var thisNum = parseInt($(e.target).attr("data-dt-idx"));
+				if (thisNum >= allpage) {
+					alert("已是最后面");
+				} else {
+					var li = " ";
+					$("#pages").html(li);
+					thisNum += 1;
+					var li =
+						"<li class='paginate_button previous' id='row-select_previous'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goPer(event,this)'>Previous</a></li>";
+					for (var i = thisNum; i < (thisNum + 20); i++) {
+						li = li +
+							"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+							i + "' tabindex='0' onclick='getPage(event,this)'>" + i + "</a></li>";
+					}
+					thisNum += 19;
+					li = li +
+						"<li class='paginate_button next' id='row-select_next'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goNext(event,this)'>Next</a></li>";
+					$("#pages").html(li);
+				}
+			}
+			
+			function goPer(e, nowTr) {
+				// var tar = e.target;
+				var thisNum = parseInt($(e.target).attr("data-dt-idx"));
+				if (thisNum >= allpage) {
+					alert("已是最后面");
+				} else {
+					var li = " ";
+					$("#pages").html(li);
+					thisNum -= 20;
+					var li =
+						"<li class='paginate_button previous' id='row-select_previous'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goPer(event,this)'>Previous</a></li>";
+					for (var i = thisNum; i < (thisNum + 20); i++) {
+						li = li +
+							"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+							i + "' tabindex='0' onclick='getPage(event,this)'>" + i + "</a></li>";
+					}
+					thisNum += 19;
+					li = li +
+						"<li class='paginate_button next' id='row-select_next'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goNext(event,this)'>Next</a></li>";
+					$("#pages").html(li);
+				}
+			}
+		</script>
+
+	</head>
+
+	<body>
+		<div class="content-wrap">
+			<div class="main">
+				<div class="container-fluid">
+
+					<!-- /# row -->
+					<div class="main-content">
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="card alert">
+									<div class="card-body">
+										<div class="compose-email">
+											<div class="mail-box">
+												
+												<aside class="lg-side">
+													
+													<div class="dataTables_paginate paging_simple_numbers">
+														<ul class="pagination" id="pages">
+															<!-- <li class="paginate_button previous disabled" id="row-select_previous">
+																<a href="#" aria-controls="row-select" data-dt-idx="0"
+																	tabindex="0">Previous</a></li>
+															<li class="paginate_button active"><a href="#"
+																	aria-controls="row-select" data-dt-idx="1" tabindex="0">1</a>
+															</li>
+															<li class="paginate_button "><a href="#" aria-controls="row-select"
+																	data-dt-idx="2" tabindex="0">2</a></li>
+															<li class="paginate_button next" id="row-select_next"><a href="#"
+																	aria-controls="row-select" data-dt-idx="-1" tabindex="0">Next</a>
+															</li> -->
+														</ul>
+													</div>
+													<div class="table-responsive">
+														<table class="table table-inbox table-hover table-responsive">
+															<thead>
+																<tr>
+																	<th>name</th>
+																	<th>type</th>
+																	<th>become</th>
+																	<th>function</th>
+																</tr>
+															</thead>
+															<tbody id="artclieList">
+																<!-- <tr>
+																	<td class="view-message dont-show">id<span
+																			class="badge badge-success pull-right m-t-6">auther</span>
+																	</td>
+																	<td class="view-message view-message">title</td>
+																	<td class="view-message inbox-small-cells"><i
+																			class="fa fa-paperclip"></i></td>
+																	<td class="view-message text-right">time</td>
+																	<td class="inbox-small-cells">
+																		<input type="button" class="btn btn-primary" value="删除">
+																	</td>
+																</tr> -->
+															</tbody>
+														</table>
+														
+													</div>
+
+												</aside>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="assets/js/lib/jquery.min.js"></script>
+		<script src="assets/js/lib/jquery.nanoscroller.min.js"></script>
+		<script src="assets/js/lib/jquery.nicescroll.min.js"></script>
+		<script src="assets/js/lib/menubar/sidebar.js"></script>
+		<script src="assets/js/lib/preloader/pace.min.js"></script>
+		<script src="assets/js/lib/bootstrap.min.js"></script>
+		<script src="assets/js/scripts.js"></script>
+	</body>
+
+</html>

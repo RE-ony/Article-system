@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>Widget</title>
+
+		<!-- ================= Favicon ================== -->
+
+		<!-- Styles -->
+		<link href="assets/css/lib/font-awesome.min.css" rel="stylesheet">
+		<link href="assets/css/lib/themify-icons.css" rel="stylesheet">
+		<link href="assets/css/lib/bootstrap.min.css" rel="stylesheet">
+		<link href="assets/css/lib/unix.css" rel="stylesheet">
+		<link href="assets/css/style.css" rel="stylesheet">
+		<script src="assets/js/lib/jquery-3.6.0.js"></script>
+	</head>
+
+	<body class="bg-primary">
+
+		<div class="unix-login">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-6 col-lg-offset-3">
+						<div class="login-content">
+							<div class="login-logo">
+								<a href="index.html"><span>Foodmin</span></a>
+							</div>
+							<div class="login-form">
+								<h4>Register to Administration</h4>
+								<form>
+									<div class="form-group">
+										<label>uid</label>
+										<input type="text" class="form-control" placeholder="uid" id="uid">
+									</div>
+									<div class="form-group">
+										<label>Password</label>
+										<input type="password" class="form-control" placeholder="Password" id="pwd">
+									</div>
+									<button type="submit" id="register"
+										class="btn btn-primary btn-flat m-b-30 m-t-30">Register</button>
+									<div class="register-link m-t-15 text-center">
+										<p>Already have account ? </p><a href="page-login.html"> Sign in</a>
+									</div>
+									<div class="checkbox">
+										<label>
+											<input type="checkbox" id="isadmin">成为作者
+										</label>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			$("#register").click(function() {
+				var userData = {
+					uid: $("#uid").val(),
+					pwd: $("#pwd").val(),
+					isin: $("#isadmin").is(":checked")
+				}
+				$.post("php/register.php", userData, function(data) {
+					if (data == "true") {
+						window.location.href = 'page-login.html';
+					}
+				});
+			});
+		</script>
+	</body>
+
+</html>

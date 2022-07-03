@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="css/base.css" rel="stylesheet">
+		<link href="css/m.css" rel="stylesheet">
+		<script src="js/jquery-1.8.3.min.js"></script>
+		<script src="js/main.js"></script>
+		<script src="js/index.js"></script>
+		<link rel="stylesheet" href="css/swiper.min.css">
+		<script src="js/swiper.min.js"></script>
+		<script src="js/banner.js"></script>
+		<script>
+			$(document).ready(function() {
+				$.post("php/checkLogin.php", function(data) {
+					var htm = ""
+					if (data.length > 0) {
+						// htm += "<a class=\"logo-title\" href=\"/root.html\">" + data + "</a>";
+						htm += data;
+					} else {
+						htm += "<a href=\"page-login.html\">登录注册</a>";
+					}
+					$("#showUid").html(htm);
+				});
+				$("#sub").click(function() {
+					var abs = $("#keyboard").val();
+					if (abs != "") {
+						document.cookie = "searchtitle=" + abs;
+						window.location.href = 'blog-serch.html';
+					}
+				});
+				$.post("php/index.php", function(data) {
+					//alert(data);
+					var dataObj = eval("(" + data + ")");
+						var td = " ";
+						$.each(dataObj, function(idx, item) {
+							//alert("name:"+item.id+",value:"+item.title);
+							td = td + "<li><section><a class='news-zuixin-pic'><img src='"+item.file_all_path+"'></a><h2><a id="+item.article_id+" onclick='getId(event,this)'>"+item.article_title+"</a></h2><p>"+item.author+"</p><p>"+item.time+"</p></section></li>";
+						});
+						$("#article").html(td);
+					});
+			});
+			function getId(e, nowTr) {
+				// var tar = e.target;
+				var userData = {
+					arctileId: $(e.target).attr("id")
+				}
+				$.post("php/saveArctileId.php", userData, function(data) {
+					$(location).attr("href", "blog-view.html");
+				});
+			}
+		</script>
+	</head>
+	<body>
+		<header>
+			<div class="logo-section box">
+				<div class="search">
+					<a href="select_list.html">
+						<input name="Submit" class="input_submit" value="搜索" type="submit" id="sub">
+					</a>
+				</div>
+				<div class="logo">
+					<a class="logo-title" href="page-login.html" id="showUid">登录/注册</a>
+				</div>
+			</div>
+			<div class="clear"></div>
+			<div class="topnav">
+				<h2>XXX</h2>
+				<nav>
+					<ul id="starlist">
+						<li><a href="index.html">网站首页</a></li>
+						<li class="menu"><a href="#">新闻资讯</a>
+							<ul class="sub">
+								<li><a href="blog-list.html">资讯列表</a></li>
+								<!--<li><a href="blog-view.php">资讯内容</a></li>-->
+							</ul>
+							<span></span>
+						</li>
+					</ul>
+				</nav>
+				<h2 id="mnavh"><span class="navicon"></span></h2>
+			</div>
+			<div class="is-search">
+				<section><i></i>请输入关键字词</section>
+			</div>
+			<div class="search-page">
+				<div class="go-left"></div>
+				<div class="search">
+					<form name="searchform" id="searchform">
+						<input name="keyboard" id="keyboard" class="input_text" value="请输入关键字词"
+							style="color: rgb(153, 153, 153);"
+							onfocus="if(value=='请输入关键字词'){this.style.color='#000';value=''}"
+							onblur="if(value==''){this.style.color='#999';value='请输入关键字词'}" type="text">
+						<input name="show" value="title" type="hidden">
+						<input name="tempid" value="1" type="hidden">
+						<input name="tbname" value="news" type="hidden">
+						<input name="Submit" class="input_submit" value="搜索" type="submit">
+					</form>
+				</div>
+				<div class="clear"></div>
+			</div>
+		</header>
+		<div class="clear blank"></div>
+		<article>
+			<div class="banner">
+				<div class="swiper-container">
+					<div class="swiper-wrapper">
+						<div class="swiper-slide"><a href="#"><img src="images/banner1.jpg"><span>推荐</span></a></div>
+						<div class="swiper-slide"><a href="#"><img src="images/banner2.jpg"><span>广告</span></a></div>
+						<div class="swiper-slide"><a href="#"><img src="images/banner3.jpg"><span>独家</span></a></div>
+					</div>
+					<div class="swiper-pagination"></div>
+					<div class="swiper-button-next"></div>
+					<div class="swiper-button-prev"></div>
+				</div>
+			</div>
+
+			<!-- banner end-->
+			<!-- headline-boc begin-->
+
+			<div class="headline-box whitebg">
+				<div class="headline-news">
+					<h2 class="headline-news-title"><a id="Backstage" href="index.html">进入后台</a></h2>
+					
+					<ul class="headline-news-list">
+						<li><a href="/" title="安静地做一个爱设计的女子">安静地做一个爱设计的女子</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<!-- headline-box end-->
+
+			<div class="clear blank"></div>
+
+			<!-- pics end-->
+
+			<div class="clear blank"></div>
+			<div class="news box whitebg tab-num03">
+				<div class="gd-box">
+					<ul id="tab">
+						<li class="tab-current">个人网站</li>
+					</ul>
+				</div>
+				<div id="tab-content">
+					<section>
+						<div class="news-zuixin">
+							<ul id="article">
+								<!-- <li>
+									<section><a href="/" class="news-zuixin-pic"><img src="images/pic05.jpg"></a>
+										<h2><a href="/">网易博客关闭，何不从此开始潇洒行走江湖！</a></h2>
+									</section>
+								</li> -->
+								
+							</ul>
+						</div>
+					</section>
+				</div>
+			</div>
+
+			<!-- news end-->
+
+			<div class="clear"></div>
+			<div class="blank clear"></div>
+		</article>
+		<style>
+			.copyrights {
+				text-indent: -9999px;
+				height: 0;
+				line-height: 0;
+				font-size: 0;
+				overflow: hidden;
+			}
+		</style>
+		<div class="copyrights" id="links20210126">
+			Collect from <a href="http://www.cssmoban.com/" title="网站模板">模板之家</a>
+			<a href="https://www.chazidian.com/" title="查字典">查字典</a>
+		</div>
+	</body>
+</html>

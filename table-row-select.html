@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>Data Table</title>
+
+		<!-- ================= Favicon ================== -->
+
+		<!-- Styles -->
+		<link href="assets/css/lib/font-awesome.min.css" rel="stylesheet">
+		<link href="assets/css/lib/themify-icons.css" rel="stylesheet">
+		<link href="assets/css/lib/datatable/dataTables.bootstrap.min.css" rel="stylesheet" />
+		<link href="assets/css/lib/datatable/buttons.bootstrap.min.css" rel="stylesheet" />
+		<link href="assets/css/lib/menubar/sidebar.css" rel="stylesheet">
+		<link href="assets/css/lib/bootstrap.min.css" rel="stylesheet">
+		<link href="assets/css/lib/unix.css" rel="stylesheet">
+		<link href="assets/css/style.css" rel="stylesheet">
+		<script src="assets/js/lib/jquery-3.6.0.js"></script>
+		<script src="assets/js/lib/plupload/plupload.full.min.js"></script>
+		<script src="layui/layui.js"></script>
+		<script>
+			var allpage = 0;
+			$(document).ready(function() {
+				$.post("php/pages.php", function(data) {
+					allpage = Math.ceil(data / 10);
+					if (allpage <= 20) {
+						var li =
+							"<li class='paginate_button'><a href='#' aria-controls='row-select' tabindex='0' >共有"+allpage+"页</a></li><li class='paginate_button active'><a href='#' aria-controls='row-select' data-dt-idx='1' tabindex='0'  onclick='getPage(event,this)'>1</a></li>";
+						for (var i = 2; i <= Math.ceil(data / 10); i++) {
+							li = li +
+								"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+								i + "' tabindex='0' onclick='getPage(event,this)'>" + i + "</a></li>";
+						}
+						$("#pages").html(li);
+					} else {
+						var li =
+							"<li class='paginate_button'><a href='#' aria-controls='row-select' tabindex='0' >共有"+allpage+"页</a></li><li class='paginate_button previous' id='row-select_previous'><a href='#' aria-controls='row-select' data-dt-idx='1' tabindex='0' onclick='goPer(event,this)'>Previous</a></li><li class='paginate_button active'><a href='#' aria-controls='row-select' data-dt-idx='1' tabindex='0'  onclick='getPage(event,this)'>1</a></li>";
+						for (var i = 2; i <= 20; i++) {
+							li = li +
+								"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+								i + "' tabindex='0' onclick='getPage(event,this)'>" + i + "</a></li>";
+						}
+						li = li +
+							"<li class='paginate_button next' id='row-select_next'><a href='#' aria-controls='row-select' data-dt-idx='20' tabindex='0' onclick='goNext(event,this)'>Next</a></li>";
+						$("#pages").html(li);
+					}
+					// alert(p);
+				});
+				$.post("php/showArctile.php", function(data) {
+					var dataObj = eval("(" + data + ")");
+					var td = " ";
+					$.each(dataObj, function(idx, item) {
+						//alert("name:"+item.id+",value:"+item.title);
+						td = td + "<tr><td id='" + item.article_id + "' onclick='getId(event,this)'>" +
+							item.article_id + "</td><td>" + item.article_title + "</td><td>" + item
+							.time + "</td><td><img src='" + item.file_all_path +
+							"' height='50px' width='50px'/></td><td>" + item.author + "</td></tr>";
+					});
+					$("#artclieList").html(td);
+				});
+				
+			});
+
+			function getId(e, nowTr) {
+				// var tar = e.target;
+				var userData = {
+					arctileId: $(e.target).attr("id")
+				}
+				$.post("php/saveArctileId.php", userData, function(data) {
+					$(location).attr("href", "app-profile.html");
+				});
+			}
+
+			function getPage(e, nowTr) {
+				// var tar = e.target;
+				$(nowTr).parent().siblings("li").removeClass("active");
+				$(nowTr).parent().addClass("active");
+				var userData = {
+					pageNum: $(e.target).attr("data-dt-idx")
+				}
+				$.post("php/showOther.php", userData, function(data) {
+					var td = " ";
+					$("#artclieList").html(td);
+					var dataObj = eval("(" + data + ")");
+					$.each(dataObj, function(idx, item) {
+						//alert("name:"+item.id+",value:"+item.title);
+						td = td + "<tr><td id='" + item.article_id + "' onclick='getId(event,this)'>" +
+							item.article_id + "</td><td>" + item.article_title + "</td><td>" + item
+							.time + "</td><td><img src='" + item.file_all_path +
+							"' height='50px' width='50px'/></td><td>" + item.author + "</td></tr>";
+					});
+					$("#artclieList").html(td);
+				});
+			}
+
+			function goNext(e, nowTr) {
+				// var tar = e.target;
+				var thisNum = parseInt($(e.target).attr("data-dt-idx"));
+				if (thisNum >= allpage) {
+					alert("已是最后面");
+				} else {
+					var li = " ";
+					$("#pages").html(li);
+					thisNum += 1;
+					var li =
+						"<li class='paginate_button previous' id='row-select_previous'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goPer(event,this)'>Previous</a></li>";
+					for (var i = thisNum; i < (thisNum + 20); i++) {
+						li = li +
+							"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+							i + "' tabindex='0' onclick='getPage(event,this)'>" + i + "</a></li>";
+					}
+					thisNum += 19;
+					li = li +
+						"<li class='paginate_button next' id='row-select_next'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goNext(event,this)'>Next</a></li>";
+					$("#pages").html(li);
+				}
+			}
+
+			function goPer(e, nowTr) {
+				// var tar = e.target;
+				var thisNum = parseInt($(e.target).attr("data-dt-idx"));
+				if (thisNum >= allpage) {
+					alert("已是最后面");
+				} else {
+					var li = " ";
+					$("#pages").html(li);
+					thisNum -= 20;
+					var li =
+						"<li class='paginate_button previous' id='row-select_previous'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goPer(event,this)'>Previous</a></li>";
+					for (var i = thisNum; i < (thisNum + 20); i++) {
+						li = li +
+							"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+							i + "' tabindex='0' onclick='getPage(event,this)'>" + i + "</a></li>";
+					}
+					thisNum += 19;
+					li = li +
+						"<li class='paginate_button next' id='row-select_next'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goNext(event,this)'>Next</a></li>";
+					$("#pages").html(li);
+				}
+			}
+		</script>
+	</head>
+
+	<body>
+		<div class="content-wrap">
+			<div class="main">
+				<div class="container-fluid">
+					
+					<!-- /# row -->
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="card alert">
+								<div class="card-header">
+									
+									<div class="table-responsive">
+										<div class="dataTables_paginate paging_simple_numbers">
+											<ul class="pagination" id="pages">
+												<!-- <li class="paginate_button previous disabled" id="row-select_previous">
+													<a href="#" aria-controls="row-select" data-dt-idx="0"
+														tabindex="0">Previous</a></li>
+												<li class="paginate_button active"><a href="#"
+														aria-controls="row-select" data-dt-idx="1" tabindex="0">1</a>
+												</li>
+												<li class="paginate_button "><a href="#" aria-controls="row-select"
+														data-dt-idx="2" tabindex="0">2</a></li>
+												<li class="paginate_button next" id="row-select_next"><a href="#"
+														aria-controls="row-select" data-dt-idx="-1" tabindex="0">Next</a>
+												</li> -->
+											</ul>
+										</div>
+									
+								</div>
+								
+								<div class="bootstrap-data-table-panel">
+									
+										<table class="table table-borderd table-hover">
+											<thead>
+												<tr>
+													<th>id</th>
+													<th>title</th>
+													<th>time</th>
+													<th>author</th>
+												</tr>
+											</thead>
+
+											<tbody id="artclieList">
+												<!-- <tr>
+														<td>Michael Bruce</td>
+														<td>Javascript Developer</td>
+														<td>Singapore</td>
+														<td>29</td>
+													</tr> -->
+											</tbody>
+										</table>
+										
+									</div>
+								</div>
+							</div>
+							<!-- /# card -->
+						</div>
+						<!-- /# column -->
+					</div>
+					<!-- /# row -->
+
+					
+				</div>
+			</div>
+		</div>
+
+		
+		<!-- jquery vendor -->
+		<script src="assets/js/lib/jquery.min.js"></script>
+		<script src="assets/js/lib/jquery.nanoscroller.min.js"></script>
+		<!-- nano scroller -->
+		<script src="assets/js/lib/menubar/sidebar.js"></script>
+		<script src="assets/js/lib/preloader/pace.min.js"></script>
+		<!-- sidebar -->
+		<script src="assets/js/lib/bootstrap.min.js"></script>
+		<!-- bootstrap -->
+
+		<script src="assets/js/scripts.js"></script>
+		<!-- scripit init-->
+		<script src="assets/js/lib/data-table/datatables.min.js"></script>
+		<script src="assets/js/lib/data-table/dataTables.bootstrap.min.js"></script>
+		<script src="assets/js/lib/data-table/dataTables.buttons.min.js"></script>
+		<script src="assets/js/lib/data-table/buttons.bootstrap.min.js"></script>
+		<script src="assets/js/lib/data-table/jszip.min.js"></script>
+		<script src="assets/js/lib/data-table/pdfmake.min.js"></script>
+		<script src="assets/js/lib/data-table/vfs_fonts.js"></script>
+		<script src="assets/js/lib/data-table/buttons.html5.min.js"></script>
+		<script src="assets/js/lib/data-table/buttons.print.min.js"></script>
+		<script src="assets/js/lib/data-table/buttons.colVis.min.js"></script>
+		<script src="assets/js/lib/data-table/datatables-init.js"></script>
+	</body>
+</html>

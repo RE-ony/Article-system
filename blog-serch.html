@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="css/base.css" rel="stylesheet">
+		<link href="css/m.css" rel="stylesheet">
+		<link href="assets/css/lib/bootstrap.min.css" rel="stylesheet">
+		<script src="js/jquery-1.8.3.min.js"></script>
+		<script src="js/hc-sticky.js"></script>
+		<script src="js/aside-sticky.js"></script>
+		<script src="js/main.js"></script>
+		<script>
+			var allpage = 0;
+			$(document).ready(function() {
+				$("#sub").click(function() {
+					var userData = {
+						keyboard: $("#keyboard").val()
+					}
+					$.post("php/saveSeach.php", userData, function(data) {
+
+					});
+					$.post("php/pages_S.php", function(data) {
+						allpage = Math.ceil(data / 10);
+						if (allpage <= 20) {
+							var li =
+								"<li class='paginate_button'><a href='#' aria-controls='row-select' tabindex='0' >共有"+allpage+"页</a></li><li class='paginate_button active'><a href='#' aria-controls='row-select' data-dt-idx='1' tabindex='0'  onclick='getPage(event,this)'>1</a></li>";
+							for (var i = 2; i <= Math.ceil(data / 10); i++) {
+								li = li +
+									"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+									i + "' tabindex='0' onclick='getPage(event,this)'>" + i +
+									"</a></li>";
+							}
+							$("#pages").html(li);
+						} else {
+							var li =
+								"<li class='paginate_button'><a href='#' aria-controls='row-select' tabindex='0' >共有"+allpage+"页</a></li><li class='paginate_button previous' id='row-select_previous'><a href='#' aria-controls='row-select' data-dt-idx='1' tabindex='0' onclick='goPer(event,this)'>Previous</a></li><li class='paginate_button active'><a href='#' aria-controls='row-select' data-dt-idx='1' tabindex='0'  onclick='getPage(event,this)'>1</a></li>";
+							for (var i = 2; i <= 20; i++) {
+								li = li +
+									"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+									i + "' tabindex='0' onclick='getPage(event,this)'>" + i +
+									"</a></li>";
+							}
+							li = li +
+								"<li class='paginate_button next' id='row-select_next'><a href='#' aria-controls='row-select' data-dt-idx='20' tabindex='0' onclick='goNext(event,this)'>Next</a></li>";
+							$("#pages").html(li);
+						}
+						// alert(p);
+					});
+					$.post("php/showArctile_S.php", function(data) {
+						var dataObj = eval("(" + data + ")");
+						var td = " ";
+						$.each(dataObj, function(idx, item) {
+							//alert("name:"+item.id+",value:"+item.title);
+							td = td + "<li><h2><a>" + item.article_title +
+								"</a></h2><img src='" + item
+								.file_all_path + "' height='50px' width='50px' /><p>" + item
+								.author +
+								"</p><p>" + item.time + "</p></li>";
+						});
+						$("#artclieList").html(td);
+					});
+				});
+				$.post("php/checkLogin.php", function(data) {
+					var htm = ""
+					if (data.length > 0) {
+						// htm += "<a class=\"logo-title\" href=\"/root.html\">" + data + "</a>";
+						htm += data;
+					} else {
+						htm += "<a href=\"page-login.html\">登录注册</a>";
+					}
+					$("#showUid").html(htm);
+				});
+			});
+
+			function getId(e, nowTr) {
+				// var tar = e.target;
+				var userData = {
+					arctileId: $(e.target).attr("id")
+				}
+				$.post("php/saveArctileId.php", userData, function(data) {
+					$(location).attr("href", "app-profile.html");
+				});
+			}
+
+			function getPage(e, nowTr) {
+				// var tar = e.target;
+				$(nowTr).parent().siblings("li").removeClass("active");
+				$(nowTr).parent().addClass("active");
+				var userData = {
+					pageNum: $(e.target).attr("data-dt-idx")
+				}
+				$.post("php/showOther_S.php", userData, function(data) {
+					var td = " ";
+					$("#artclieList").html(td);
+					var dataObj = eval("(" + data + ")");
+					$.each(dataObj, function(idx, item) {
+						//alert("name:"+item.id+",value:"+item.title);
+						td = td + "<li><h2><a>" + item.article_title + "</a></h2><img src='" + item
+							.file_all_path + "' height='50px' width='50px' /><p>" + item.author +
+							"</p><p>" + item.time + "</p></li>";
+					});
+					$("#artclieList").html(td);
+				});
+			}
+
+			function goNext(e, nowTr) {
+				// var tar = e.target;
+				var thisNum = parseInt($(e.target).attr("data-dt-idx"));
+				if (thisNum >= allpage) {
+					alert("已是最后面");
+				} else {
+					var li = " ";
+					$("#pages").html(li);
+					thisNum += 1;
+					var li =
+						"<li class='paginate_button previous' id='row-select_previous'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goPer(event,this)'>Previous</a></li>";
+					for (var i = thisNum; i < (thisNum + 20); i++) {
+						li = li +
+							"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+							i + "' tabindex='0' onclick='getPage(event,this)'>" + i + "</a></li>";
+					}
+					thisNum += 19;
+					li = li +
+						"<li class='paginate_button next' id='row-select_next'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goNext(event,this)'>Next</a></li>";
+					$("#pages").html(li);
+				}
+			}
+
+			function goPer(e, nowTr) {
+				// var tar = e.target;
+				var thisNum = parseInt($(e.target).attr("data-dt-idx"));
+				if (thisNum >= allpage) {
+					alert("已是最后面");
+				} else {
+					var li = " ";
+					$("#pages").html(li);
+					thisNum -= 20;
+					var li =
+						"<li class='paginate_button previous' id='row-select_previous'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goPer(event,this)'>Previous</a></li>";
+					for (var i = thisNum; i < (thisNum + 20); i++) {
+						li = li +
+							"<li class='paginate_button'><a href='#' aria-controls='row-select' data-dt-idx='" +
+							i + "' tabindex='0' onclick='getPage(event,this)'>" + i + "</a></li>";
+					}
+					thisNum += 19;
+					li = li +
+						"<li class='paginate_button next' id='row-select_next'><a href='#' aria-controls='row-select' data-dt-idx='" +
+						thisNum + "' tabindex='0' onclick='goNext(event,this)'>Next</a></li>";
+					$("#pages").html(li);
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<header>
+			<div class="logo-section box">
+				<div class="search">
+
+					<input name="keyboard" id="keyboard" class="input_text" value="请输入关键字词"
+						style="color: rgb(153, 153, 153);"
+						onfocus="if(value=='请输入关键字词'){this.style.color='#000';value=''}"
+						onblur="if(value==''){this.style.color='#999';value='请输入关键字词'}" type="text">
+					<input name="show" value="title" type="hidden">
+					<input name="tempid" value="1" type="hidden">
+					<input name="tbname" value="news" type="hidden">
+					<input name="Submit" class="input_submit" value="搜索" type="submit" id="sub">
+
+				</div>
+				<div class="logo">
+					<a class="logo-title" href="page-login.html" id="showUid">登录/注册</a>
+				</div>
+			</div>
+			<div class="topnav">
+				<nav>
+					<ul id="starlist">
+						<li><a href="index.html">网站首页</a></li>
+						<li class="menu"><a href="blog-list.html">新闻资讯</a>
+							<ul class="sub">
+								<li><a href="blog-list.html">资讯列表</a></li>
+								<li><a href="blog-view.html">资讯内容</a></li>
+							</ul>
+							<span></span>
+						</li>
+					</ul>
+				</nav>
+				<h2 id="mnavh"><span class="navicon"></span></h2>
+			</div>
+		</header>
+		<div class="clear blank"></div>
+		<article>
+			<div class="blogs">
+				<div class="blogs-box whitebg">
+					<div class="news-title">
+						<h2>资讯列表</h2>
+					</div>
+					<div class="blogs-list" id="artclieList">
+						<ul>
+							<!-- <li>
+								<h2><a href="blog-view.html">title</a></h2><img src='" + item.file_all_path +
+							"' height='50px' width='50px' />
+								<p>who</p>
+							</li> -->
+						</ul>
+					</div>
+				</div>
+			</div>
+		</article>
+		<div class="dataTables_paginate paging_simple_numbers">
+			<ul class="pagination" id="pages">
+				<!-- <li class="paginate_button previous disabled" id="row-select_previous">
+					<a href="#" aria-controls="row-select" data-dt-idx="0" tabindex="0">Previous</a>
+				</li>
+				<li class="paginate_button active"><a href="#" aria-controls="row-select" data-dt-idx="1"
+						tabindex="0">1</a>
+				</li>
+				<li class="paginate_button "><a href="#" aria-controls="row-select" data-dt-idx="2" tabindex="0">2</a>
+				</li>
+				<li class="paginate_button next" id="row-select_next"><a href="#" aria-controls="row-select"
+						data-dt-idx="-1" tabindex="0">Next</a>
+				</li> -->
+			</ul>
+		</div>
+	</body>
+</html>

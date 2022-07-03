@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>Widget</title>
+
+		<!-- ================= Favicon ================== -->
+
+		<!-- Styles -->
+		<link href="assets/css/lib/font-awesome.min.css" rel="stylesheet">
+		<link href="assets/css/lib/themify-icons.css" rel="stylesheet">
+		<link href="assets/css/lib/bootstrap.min.css" rel="stylesheet">
+		<link href="assets/css/lib/unix.css" rel="stylesheet">
+		<link href="assets/css/style.css" rel="stylesheet">
+		<link rel="stylesheet" href="layui/css/layui.css">
+		<script src="assets/js/lib/jquery-3.6.0.js"></script>
+		<script src="layui/layui.js"></script>
+	</head>
+
+	<body class="bg-primary">
+
+		<div class="unix-login">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-6 col-lg-offset-3">
+						<div class="login-content">
+							<div class="login-logo">
+								<a href="index.html"><span>Foodmin</span></a>
+							</div>
+							<div class="login-form">
+								<h4>Administratior Login</h4>
+								<form>
+									<div class="form-group">
+										<label>uid</label>
+										<input type="text" class="form-control" placeholder="uid" id="uid">
+									</div>
+									<div class="form-group">
+										<label>Password</label>
+										<input type="password" class="form-control" placeholder="Password" id="pwd">
+									</div>
+									<div class="checkbox">
+										<label>
+											<input type="checkbox" id="isin"> Remember Me
+										</label>
+									</div>
+									<div class="btn btn-primary btn-flat m-b-30 m-t-30" id="login">Sign in</div>
+									<div class="register-link m-t-15 text-center">
+										<p>Don't have account ? </p><a href="page-register.html"> Sign Up Here</a><br />
+										<a href="#">Forgotten Password?</a>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			$("#login").click(function() {
+				var userData = {
+					uid: $("#uid").val(),
+					pwd: $("#pwd").val(),
+					isin: $("#isin").is(":checked")
+				}
+				$.post("php/login.php", userData, function(data) {
+					alert(data);
+					if (data == "false") {
+						layui.define(function() { // 需确保您的 layui.js 是引入的构建后的版本（即官网下载或 git 平台的发行版）
+							//直接可得到各种内置模块
+							var layer = layui.layer,
+								form = layui.form,
+								table = layui.table;
+							layer.msg("uid或密码错误或者被拉黑");
+							exports('index', {}); //注意，这里是模块输出的核心，模块名必须和 use 时的模块名一致
+						});
+					}else{
+						$(location).attr("href", "index.html");
+					}
+				});
+			});
+		</script>
+	</body>
+</html>
